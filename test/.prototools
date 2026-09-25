@@ -1,0 +1,26 @@
+# The versions CI installs with each plugin in this repository.
+# Renovate bumps each one through the regex manager in renovate.json.
+
+# renovate: datasource=github-releases depName=getsops/sops
+sops = "3.13.3"
+# renovate: datasource=github-releases depName=pulumi/pulumi
+pulumi = "3.263.0"
+# renovate: datasource=github-releases depName=koalaman/shellcheck
+shellcheck = "0.11.0"
+# renovate: datasource=github-releases depName=mvdan/sh
+shfmt = "3.13.1"
+# renovate: datasource=github-releases depName=bats-core/bats-core
+bats = "1.14.0"
+# renovate: datasource=github-releases depName=FiloSottile/age
+age = "1.3.2"
+# renovate: datasource=github-releases depName=fastly/cli
+fastly = "16.1.0"
+
+[plugins.tools]
+sops = "file://../plugins/sops.toml"
+pulumi = "file://../plugins/pulumi.toml"
+shellcheck = "file://../plugins/shellcheck.toml"
+shfmt = "file://../plugins/shfmt.toml"
+bats = "file://../plugins/bats.toml"
+age = "file://../plugins/age.toml"
+fastly = "file://../plugins/fastly.toml"

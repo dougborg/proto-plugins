@@ -1,0 +1,23 @@
+# proto plugin for Bats, the Bash Automated Testing System: https://github.com/bats-core/bats-core
+# Bats is plain Bash, and its releases publish no assets, so this installs the tag's source archive.
+# GitHub publishes no checksum for it, so pin the hash with proto's lockfile.
+name = "bats"
+type = "cli"
+
+[platform.linux]
+download-file = "bats-core-{version}.tar.gz"
+archive-prefix = "bats-core-{version}"
+
+[platform.macos]
+download-file = "bats-core-{version}.tar.gz"
+archive-prefix = "bats-core-{version}"
+
+[install]
+download-url = "https://github.com/bats-core/bats-core/archive/refs/tags/v{version}.tar.gz"
+
+[install.exes.bats]
+primary = true
+exe-path = "bin/bats"
+
+[resolve]
+git-url = "https://github.com/bats-core/bats-core"
