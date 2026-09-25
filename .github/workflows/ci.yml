@@ -1,0 +1,129 @@
+name: CI
+
+# Repository baseline (dougborg-dot-net docs/decisions/0001-repository-baseline.md).
+# `check` is a required check in the `Protect main` ruleset
+# (stacks/github/protection.ts); renaming it blocks every merge. It passes
+# only when `lint` and every `install` platform pass, so the matrix can
+# change without touching the ruleset.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  # renovate: datasource=github-releases depName=moonrepo/proto
+  PROTO_VERSION: 0.62.3
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Renovate needs Node ^24.11.0.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+
+      - name: Validate the Renovate config
+        run: >-
+          npx --yes --package=renovate@44.97.4
+          -- renovate-config-validator --strict --no-global renovate.json
+
+      - name: Install actionlint
+        env:
+          # renovate: datasource=github-releases depName=rhysd/actionlint
+          ACTIONLINT_VERSION: 1.7.12
+        run: |
+          base="https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}"
+          archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          cd "$RUNNER_TEMP"
+          curl -fsSLO "$base/$archive"
+          curl -fsSLO "$base/actionlint_${ACTIONLINT_VERSION}_checksums.txt"
+          sha256sum --check --ignore-missing "actionlint_${ACTIONLINT_VERSION}_checksums.txt"
+          tar -xzf "$archive" actionlint
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Lint the workflows
+        run: actionlint
+
+      - uses: moonrepo/setup-toolchain@261c62cb5b0f580c7be7c8cd0f023a2e96756095 # v0.6.4
+        with:
+          proto-version: ${{ env.PROTO_VERSION }}
+          cache: false
+
+      # The repository's own shellcheck and shfmt plugins lint its script.
+      - name: Lint the scripts
+        working-directory: test
+        run: |
+          proto install shellcheck
+          proto install shfmt
+          proto run shellcheck -- ../scripts/*.sh
+          proto run shfmt -- --diff --indent 4 --case-indent ../scripts/*.sh
+
+  install:
+    name: install
+    strategy:
+      fail-fast: false
+      matrix:
+        # Linux x64 and arm64, and macOS arm64.
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: moonrepo/setup-toolchain@261c62cb5b0f580c7be7c8cd0f023a2e96756095 # v0.6.4
+        with:
+          proto-version: ${{ env.PROTO_VERSION }}
+          cache: false
+
+      - name: Install every plugin at its pinned version
+        run: |
+          failed=()
+          for plugin in plugins/*.toml; do
+            tool="$(basename "$plugin" .toml)"
+            echo "::group::$tool"
+            if ! scripts/check-plugin.sh "$tool"; then
+              failed+=("$tool")
+            fi
+            echo "::endgroup::"
+          done
+          if ((${#failed[@]})); then
+            echo "::error::Failed: ${failed[*]}"
+            exit 1
+          fi
+
+  check:
+    name: check
+    needs: [lint, install]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: Require lint and every install platform to pass
+        env:
+          LINT: ${{ needs.lint.result }}
+          INSTALL: ${{ needs.install.result }}
+        run: |
+          echo "lint: $LINT, install: $INSTALL"
+          [ "$LINT" = success ] && [ "$INSTALL" = success ]
