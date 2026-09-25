@@ -1,4 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>dougborg/renovate-config"]
+  "extends": ["github>dougborg/renovate-config"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Versions pinned under a `# renovate: datasource=... depName=...` comment: the tools CI installs in test/.prototools, and proto and actionlint in the workflows.",
+      "managerFilePatterns": ["/(^|/)\\.prototools$/", "/^\\.github/workflows/[^/]+\\.ya?ml$/"],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)\\s*\\n\\s*[\\w-]+\\s*[=:]\\s*\"?(?<currentValue>[^\"\\s]+)\"?"
+      ],
+      "extractVersionTemplate": "^v?(?<version>.+)$"
+    }
+  ]
 }
