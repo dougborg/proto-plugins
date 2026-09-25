@@ -1,0 +1,6 @@
+# Send vulnerability reports to private vulnerability reporting, not issues.
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/dougborg/proto-plugins/security/advisories/new
+    about: Report it privately; see SECURITY.md.

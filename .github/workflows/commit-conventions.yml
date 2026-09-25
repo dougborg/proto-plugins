@@ -1,0 +1,67 @@
+name: Commit conventions
+
+# Repository baseline (dougborg-dot-net docs/decisions/0001-repository-baseline.md).
+# Both job names are required checks in the `Protect main` ruleset
+# (stacks/github/protection.ts); renaming a job blocks every merge.
+
+on:
+  pull_request:
+    # `edited` too: a skipped run would become the check's latest result, and
+    # GitHub counts a skipped required check as passing.
+    types: [opened, edited, synchronize, reopened]
+
+permissions: {}
+
+jobs:
+  lint-pr-title:
+    name: Conventional PR title
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    steps:
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # The same types as .commitlintrc.json.
+          types: |
+            build
+            chore
+            ci
+            docs
+            feat
+            fix
+            perf
+            refactor
+            revert
+            style
+            test
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: The PR title subject must start with a lowercase character.
+
+  # Rebase merges land every commit on main as written, and release-please
+  # reads each one, so every commit in the pull request must be Conventional.
+  lint-commits:
+    name: Conventional commits
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+      - name: Lint every commit in the pull request
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: >-
+          npx --yes --package=@commitlint/cli@21.2.3
+          --package=@commitlint/config-conventional@21.2.3
+          -- commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --verbose
