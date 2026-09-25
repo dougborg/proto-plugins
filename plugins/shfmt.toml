@@ -1,0 +1,25 @@
+# proto plugin for shfmt, the shell formatter from mvdan/sh: https://github.com/mvdan/sh
+# The release assets are bare binaries, and recent releases publish no checksum file, so pin the hash with proto's lockfile.
+name = "shfmt"
+type = "cli"
+
+[platform.linux]
+archs = ["x64", "arm64"]
+download-file = "shfmt_v{version}_linux_{arch}"
+
+[platform.macos]
+archs = ["x64", "arm64"]
+download-file = "shfmt_v{version}_darwin_{arch}"
+
+[install]
+download-url = "https://github.com/mvdan/sh/releases/download/v{version}/{download_file}"
+
+[install.arch]
+x64 = "amd64"
+arm64 = "arm64"
+
+[install.exes.shfmt]
+primary = true
+
+[resolve]
+git-url = "https://github.com/mvdan/sh"

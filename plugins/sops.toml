@@ -1,0 +1,28 @@
+# proto plugin for sops, the encrypted-file editor: https://github.com/getsops/sops
+# The release assets are bare binaries, verified against the release's checksums file.
+name = "sops"
+type = "cli"
+
+[platform.linux]
+archs = ["x64", "arm64"]
+download-file = "sops-v{version}.linux.{arch}"
+checksum-file = "sops-v{version}.checksums.txt"
+
+[platform.macos]
+archs = ["x64", "arm64"]
+download-file = "sops-v{version}.darwin.{arch}"
+checksum-file = "sops-v{version}.checksums.txt"
+
+[install]
+download-url = "https://github.com/getsops/sops/releases/download/v{version}/{download_file}"
+checksum-url = "https://github.com/getsops/sops/releases/download/v{version}/{checksum_file}"
+
+[install.arch]
+x64 = "amd64"
+arm64 = "arm64"
+
+[install.exes.sops]
+primary = true
+
+[resolve]
+git-url = "https://github.com/getsops/sops"
