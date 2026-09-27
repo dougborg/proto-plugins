@@ -1,0 +1,71 @@
+name: Mirror bats
+
+# Publishes bats-core's source archive as a release file of this repository
+# (bats-v{version}), for plugins/bats.toml. See scripts/mirror-bats.sh.
+#
+# It mirrors the version test/.prototools pins and upstream's latest release,
+# daily, so a Renovate bump of the pin finds its mirror already published.
+# Pull requests that change the mirror run it as a dry run: everything but the
+# publish, with a read-only token.
+
+on:
+  pull_request:
+    paths:
+      - scripts/mirror-bats.sh
+      - .github/workflows/mirror-bats.yml
+  push:
+    branches: [main]
+    paths:
+      - scripts/mirror-bats.sh
+      - .github/workflows/mirror-bats.yml
+      - test/.prototools
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+    inputs:
+      versions:
+        description: "Extra bats versions to mirror, space-separated (e.g. 1.13.0 1.12.0)"
+        required: false
+        default: ""
+
+permissions: {}
+
+concurrency:
+  group: mirror-bats
+  cancel-in-progress: false
+
+jobs:
+  # Pull requests: everything but the publish, with a read-only token.
+  dry-run:
+    name: mirror (dry run)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Mirror the pinned and latest versions, without publishing
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: "1"
+        run: scripts/mirror-bats-versions.sh
+
+  mirror:
+    name: mirror
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Mirror the pinned, latest and requested versions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXTRA_VERSIONS: ${{ inputs.versions }}
+        run: scripts/mirror-bats-versions.sh
