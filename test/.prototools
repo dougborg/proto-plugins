@@ -15,6 +15,8 @@ bats = "1.14.0"
 age = "1.3.2"
 # renovate: datasource=github-releases depName=fastly/cli
 fastly = "16.1.0"
+# renovate: datasource=github-releases depName=TypedDevs/bashunit
+bashunit = "0.51.0"
 
 [plugins.tools]
 sops = "file://../plugins/sops.toml"
@@ -24,3 +26,4 @@ shfmt = "file://../plugins/shfmt.toml"
 bats = "file://../plugins/bats.toml"
 age = "file://../plugins/age.toml"
 fastly = "file://../plugins/fastly.toml"
+bashunit = "file://../plugins/bashunit.toml"

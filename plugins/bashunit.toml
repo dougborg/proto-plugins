@@ -1,0 +1,22 @@
+# proto plugin for bashunit, the Bash testing library: https://github.com/TypedDevs/bashunit
+# The release asset is one platform-independent Bash script, verified against the release's checksum file.
+name = "bashunit"
+type = "cli"
+
+[platform.linux]
+download-file = "bashunit"
+checksum-file = "checksum"
+
+[platform.macos]
+download-file = "bashunit"
+checksum-file = "checksum"
+
+[install]
+download-url = "https://github.com/TypedDevs/bashunit/releases/download/{version}/{download_file}"
+checksum-url = "https://github.com/TypedDevs/bashunit/releases/download/{version}/{checksum_file}"
+
+[install.exes.bashunit]
+primary = true
+
+[resolve]
+git-url = "https://github.com/TypedDevs/bashunit"

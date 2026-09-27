@@ -12,6 +12,7 @@ Each plugin installs the upstream project's own release for macOS and Linux, on 
 | [`shellcheck`](plugins/shellcheck.toml) | [ShellCheck](https://github.com/koalaman/shellcheck), the shell script linter | `shellcheck` | proto's lockfile only |
 | [`shfmt`](plugins/shfmt.toml) | [shfmt](https://github.com/mvdan/sh), the shell formatter | `shfmt` | proto's lockfile only |
 | [`bats`](plugins/bats.toml) | [Bats](https://github.com/bats-core/bats-core), the Bash testing system, from the tag's source archive | `bats` | proto's lockfile only |
+| [`bashunit`](plugins/bashunit.toml) | [bashunit](https://github.com/TypedDevs/bashunit), the Bash testing library | `bashunit` | the release's `checksum` |
 | [`age`](plugins/age.toml) | [age](https://github.com/FiloSottile/age), the file encryption tool | `age`, `age-keygen` | proto's lockfile only |
 | [`fastly`](plugins/fastly.toml) | the [Fastly CLI](https://github.com/fastly/cli) | `fastly` | the release's `fastly_v{version}_SHA256SUMS` |
 
@@ -57,6 +58,7 @@ sops = "3.13.3"
 | `shellcheck` | `koalaman/shellcheck` |
 | `shfmt` | `mvdan/sh` |
 | `bats` | `bats-core/bats-core` |
+| `bashunit` | `TypedDevs/bashunit` |
 | `age` | `FiloSottile/age` |
 | `fastly` | `fastly/cli` |
 
