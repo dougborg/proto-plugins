@@ -20,7 +20,7 @@ concurrency:
 
 env:
   # renovate: datasource=github-releases depName=moonrepo/proto
-  PROTO_VERSION: 0.62.3
+  PROTO_VERSION: 0.63.2
 
 jobs:
   lint:
